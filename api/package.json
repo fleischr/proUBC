@@ -1,8 +1,8 @@
 {
-  "name": "abap-openapi-client",
+  "name": "proubc-api",
   "private": true,
   "version": "1.0.0",
-  "description": "ABAP OpenAPI Client Generator",
+  "description": "proUBC ABAP REST API transpiler",
   "scripts": {
     "transpile": "abaplint && rm -rf output && abap_transpile",
     "test": "npm run transpile && node output/index.mjs",
@@ -29,5 +29,9 @@
     "@abaplint/cli": "^2.87.0",
     "@abaplint/runtime": "^2.0.0",
     "@abaplint/transpiler-cli": "^2.0.0"
+  },
+  "devDependencies": {
+    "@provide/types": "^1.7.0",
+    "provide-js": "^1.7.8"
   }
 }
