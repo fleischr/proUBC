@@ -1,0 +1,222 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "proUBC Inbound",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://{{sap_endpoint}}"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "basicAuth": {
+        "type": "http",
+        "scheme": "basic"
+      }
+    }
+  },
+  "paths": {
+    "/proubc/organizations/{id}/proxy": {
+      "get": {
+        "tags": [
+          "default"
+        ],
+        "summary": "Organization Proxy Health Check",
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID of the organization",
+            "example": "org_id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "default"
+        ],
+        "summary": "DeleteProxyConfiguration",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID of the target `Organization`",
+            "example": "org_id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/proubc/status": {
+      "get": {
+        "tags": [
+          "default"
+        ],
+        "summary": "Health Check",
+        "description": "checks the health of the SAP instance",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/proubc/business_objects/{id}/status": {
+      "put": {
+        "tags": [
+          "default"
+        ],
+        "summary": "Update object status",
+        "description": "updates the status of a business object",
+        "requestBody": {
+          "content": {}
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID of the business object",
+            "example": "business_object_id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/proubc/business_object_models/": {
+      "get": {
+        "tags": [
+          "default"
+        ],
+        "summary": "Get object model",
+        "parameters": [
+          {
+            "name": "",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "example": "recordType"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/proubc/proxies": {
+      "post": {
+        "tags": [
+          "default"
+        ],
+        "summary": "Configure proxy",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": "{\n  \"organization\"\n}"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/proubc/auth": {
+      "get": {
+        "tags": [
+          "default"
+        ],
+        "summary": "Authenticate",
+        "description": "Authenticate a user by email address and password, returning a newly-authorized X-CSRF-Token token",
+        "security": [
+          {
+            "basicAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            },
+            "example": "Fetch"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            },
+            "example": "Basic dW5pYnJpZ2h0OnVuaWJyaWdodA=="
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    }
+  }
+}
