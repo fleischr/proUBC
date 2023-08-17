@@ -6,18 +6,18 @@ INTERFACE zif_prvd_vault
              c_vaultkey_asym TYPE string VALUE 'assymetric'.
 
   "vault key specs - symmetric
-  CONSTANTS: c_vaultkey_spec_aes256 TYPE string VALUE 'AES-256-GCM'.
-  CONSTANTS: c_vaultkey_spec_chacha20 TYPE string VALUE 'ChaCha20'.
+  CONSTANTS: c_vaultkey_spec_aes256 TYPE string VALUE 'AES-256-GCM',
+             c_vaultkey_spec_chacha20 TYPE string VALUE 'ChaCha20'.
   "RSA
   CONSTANTS: c_vaultkey_spec_rsa TYPE string VALUE 'RSA'.
 
   "vault key specs - assymetric
-  CONSTANTS: c_vaultkey_spec_bjj TYPE string VALUE 'babyJubJub'.
-  CONSTANTS: c_vaultkey_spec_c25519 TYPE string VALUE 'C25519'.
-  CONSTANTS: c_vaultkey_spec_ed25519 TYPE string VALUE 'Ed25519'.
-  CONSTANTS: c_vaultkey_spec_nats_ed25519 TYPE string VALUE 'Ed25519-nkey'.
-  CONSTANTS: c_vaultkey_spec_secp256k1 TYPE string VALUE 'secp256k1'.
-  CONSTANTS: c_vaultkey_spec_bip39 TYPE string VALUE 'BIP39'.
+  CONSTANTS: c_vaultkey_spec_bjj TYPE string VALUE 'babyJubJub',
+             c_vaultkey_spec_c25519 TYPE string VALUE 'C25519',
+             c_vaultkey_spec_ed25519 TYPE string VALUE 'Ed25519',
+             c_vaultkey_spec_nats_ed25519 TYPE string VALUE 'Ed25519-nkey',
+             c_vaultkey_spec_secp256k1 TYPE string VALUE 'secp256k1',
+             c_vaultkey_spec_bip39 TYPE string VALUE 'BIP39'.
 
 
   TYPES: BEGIN OF ty_vault_query,
@@ -48,7 +48,7 @@ INTERFACE zif_prvd_vault
            fingerprint TYPE string,
          END OF ty_vault_keys.
 
-  TYPES: ty_vault_keys_list TYPE TABLE OF ty_vault_keys WITH KEY id.
+  TYPES ty_vault_keys_list TYPE TABLE OF ty_vault_keys WITH KEY id.
 
   TYPES: BEGIN OF ty_signed_message,
            message TYPE string,
@@ -57,6 +57,22 @@ INTERFACE zif_prvd_vault
   TYPES: BEGIN OF ty_signature,
            signature TYPE string,
          END OF ty_signature.
+
+  TYPES: BEGIN OF ty_encrypt_req,
+           data TYPE string,
+         END OF ty_encrypt_req.
+
+  TYPES: BEGIN OF ty_encrypt_res,
+           data TYPE string,
+         END OF ty_encrypt_res.
+
+  TYPES: BEGIN OF ty_vault_key_create,
+            type TYPE string,
+            usage TYPE string,
+            spec TYPE string,
+            name TYPE string,
+            description TYPE string,
+         END OF ty_vault_key_create.
 
 
 
@@ -69,10 +85,8 @@ INTERFACE zif_prvd_vault
   "! Body schema: string
   METHODS create_key
     IMPORTING
-              iv_authorization    TYPE string
-              iv_content_type     TYPE string
               iv_vault_id         TYPE zprvdvaultid
-              body                TYPE string
+              is_body             TYPE ty_vault_key_create
     EXPORTING
               ev_apiresponsestr   TYPE string
               ev_apiresponse      TYPE REF TO data
@@ -262,7 +276,7 @@ INTERFACE zif_prvd_vault
   METHODS sign
     IMPORTING
               iv_vaultid          TYPE zprvdvaultid
-              iv_keyid            type zprvdvaultid
+              iv_keyid            TYPE zprvdvaultid
               is_message          TYPE ty_signed_message
               iv_content_type     TYPE string
     EXPORTING
