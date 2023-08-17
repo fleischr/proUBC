@@ -162,6 +162,10 @@ CLASS zcl_prvd_vault_helper IMPLEMENTATION.
         ev_apiresponsestr   = lv_apiresponsestr
         ev_apiresponse      = lv_apiresponse
         ev_httpresponsecode = lv_apiresponsecode ).
+      CASE lv_httpresponsecode.
+        WHEN 200.
+        WHEN OTHERS.
+      ENDCASE.
 *    CATCH cx_static_check.
   ENDMETHOD.
 
@@ -174,6 +178,10 @@ CLASS zcl_prvd_vault_helper IMPLEMENTATION.
 *    mo_vault_api->create_vault(
 *        is_body          =).
 *    CATCH cx_static_check.
+    CASE lv_httpresponsecode.
+      WHEN 200.
+      WHEN OTHERS.
+    ENDCASE.
   ENDMETHOD.
 
 
@@ -181,7 +189,15 @@ CLASS zcl_prvd_vault_helper IMPLEMENTATION.
     DATA: lv_apiresponsestr TYPE string,
           lv_apiresponse TYPE REF TO data,
           lv_apiresponsecode TYPE i.
-    mo_vault_api = get_vault_client( ).
+    mo_vault_api = get_vault_client(
+      IMPORTING
+        ev_apiresponsestr   = lv_apiresponsestr
+        ev_apiresponse      = lv_apiresponse
+        ev_httpresponsecode = lv_apiresponsecode ).
+    CASE lv_httpresponsecode.
+      WHEN 200.
+      WHEN OTHERS.
+    ENDCASE.
   ENDMETHOD.
 
 
@@ -189,7 +205,15 @@ CLASS zcl_prvd_vault_helper IMPLEMENTATION.
     DATA: lv_apiresponsestr TYPE string,
           lv_apiresponse TYPE REF TO data,
           lv_apiresponsecode TYPE i.
-    mo_vault_api = get_vault_client( ).
+    mo_vault_api = get_vault_client(
+      IMPORTING
+        ev_apiresponsestr   = lv_apiresponsestr
+        ev_apiresponse      = lv_apiresponse
+        ev_httpresponsecode = lv_apiresponsecode ).
+    CASE lv_httpresponsecode.
+      WHEN 200.
+      WHEN OTHERS.
+    ENDCASE.
   ENDMETHOD.
 
 
@@ -197,7 +221,15 @@ CLASS zcl_prvd_vault_helper IMPLEMENTATION.
     DATA: lv_apiresponsestr TYPE string,
           lv_apiresponse TYPE REF TO data,
           lv_apiresponsecode TYPE i.
-    mo_vault_api = get_vault_client( ).
+    mo_vault_api = get_vault_client(
+      IMPORTING
+      ev_apiresponsestr   = lv_apiresponsestr
+      ev_apiresponse      = lv_apiresponse
+      ev_httpresponsecode = lv_apiresponsecode ).
+    CASE lv_httpresponsecode.
+      WHEN 200.
+      WHEN OTHERS.
+    ENDCASE.
   ENDMETHOD.
 
 
@@ -205,22 +237,30 @@ CLASS zcl_prvd_vault_helper IMPLEMENTATION.
     DATA: lv_apiresponsestr TYPE string,
           lv_apiresponse TYPE REF TO data,
           lv_apiresponsecode TYPE i.
-    mo_vault_api = get_vault_client( ).
+    mo_vault_api = get_vault_client(
+      IMPORTING
+        ev_apiresponsestr   = lv_apiresponsestr
+        ev_apiresponse      = lv_apiresponse
+        ev_httpresponsecode = lv_apiresponsecode ).
+    CASE lv_httpresponsecode.
+      WHEN 200.
+      WHEN OTHERS.
+    ENDCASE.
   ENDMETHOD.
 
 
   METHOD get_vault_client.
     IF mo_vault_api IS NOT BOUND.
       cl_http_client=>create_by_url(
-    EXPORTING
-      url                = mv_vault_api_url
-    IMPORTING
-      client             = mo_http_client
-    EXCEPTIONS
-      argument_not_found = 1
-      plugin_not_active  = 2
-      internal_error     = 3
-      OTHERS             = 4 ).
+        EXPORTING
+          url                = mv_vault_api_url
+        IMPORTING
+          client             = mo_http_client
+        EXCEPTIONS
+          argument_not_found = 1
+          plugin_not_active  = 2
+          internal_error     = 3
+          OTHERS             = 4 ).
       IF sy-subrc <> 0.
         " error handling
       ENDIF.
@@ -228,8 +268,6 @@ CLASS zcl_prvd_vault_helper IMPLEMENTATION.
       mo_http_client->propertytype_accept_cookie = if_http_client=>co_enabled.
       mo_http_client->request->set_header_field( name  = if_http_form_fields_sap=>sap_client 
                                                  value = '100' ).
-
-      "todo fix params
       mo_vault_api = NEW zcl_prvd_vault( ii_client   = mo_http_client
                                          iv_tenant   = mv_tenant
                                          iv_bpitoken = mv_prvd_token ).
@@ -323,7 +361,15 @@ CLASS zcl_prvd_vault_helper IMPLEMENTATION.
     DATA: lv_apiresponsestr TYPE string,
           lv_apiresponse TYPE REF TO data,
           lv_apiresponsecode TYPE i.
-    mo_vault_api = get_vault_client( ).
+    mo_vault_api = get_vault_client(
+      IMPORTING
+        ev_apiresponsestr   = lv_apiresponsestr
+        ev_apiresponse      = lv_apiresponse
+        ev_httpresponsecode = lv_apiresponsecode ).
+    CASE lv_httpresponsecode.
+        WHEN 200.
+        WHEN OTHERS.
+    ENDCASE.
   ENDMETHOD.
 
   METHOD get_access_token.
@@ -337,7 +383,6 @@ CLASS zcl_prvd_vault_helper IMPLEMENTATION.
     READ TABLE lt_vault_list INTO ls_org_vault INDEX 1.
     IF sy-subrc = 0.
       rs_vault = ls_org_vault.
-    ELSE.
     ENDIF.
   ENDMETHOD.
 
