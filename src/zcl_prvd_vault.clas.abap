@@ -307,8 +307,7 @@ CLASS zcl_prvd_vault IMPLEMENTATION.
       EXPORTING
         json             = lv_responsestr
       CHANGING
-        data             = ev_apiresponse
-    ).
+        data             = ev_apiresponse ).
     "WRITE / lv_code. ~replace with logging call
     CASE lv_code.
       WHEN 200.
@@ -414,4 +413,44 @@ CLASS zcl_prvd_vault IMPLEMENTATION.
       WHEN OTHERS.
     ENDCASE.
   ENDMETHOD.
+
+  METHOD zif_prvd_vault~encrypt.
+    DATA lv_code TYPE i.
+    DATA lv_temp TYPE string.
+    DATA lv_uri TYPE string VALUE '/api/v1/vaults/{vault_id}/keys/{key_id}/encrypt'.
+    DATA lv_request_data TYPE REF TO data.
+    DATA lv_request_str TYPE string.
+    lv_temp = iv_vaultid.
+    lv_temp = cl_http_utility=>escape_url( condense( lv_temp ) ).
+    REPLACE ALL OCCURRENCES OF '{vault_id}' IN lv_uri WITH lv_temp.
+    lv_temp = iv_keyid.
+    REPLACE ALL OCCURRENCES OF '{key_id}' IN lv_uri WITH lv_temp.
+  ENDMETHOD.
+
+  METHOD zif_prvd_vault~decrypt.
+    DATA lv_code TYPE i.
+    DATA lv_temp TYPE string.
+    DATA lv_uri TYPE string VALUE '/api/v1/vaults/{vault_id}/keys/{key_id}/decrypt'.
+    DATA lv_request_data TYPE REF TO data.
+    DATA lv_request_str TYPE string.
+    lv_temp = iv_vaultid.
+    lv_temp = cl_http_utility=>escape_url( condense( lv_temp ) ).
+    REPLACE ALL OCCURRENCES OF '{vault_id}' IN lv_uri WITH lv_temp.
+    lv_temp = iv_keyid.
+    REPLACE ALL OCCURRENCES OF '{key_id}' IN lv_uri WITH lv_temp.
+  ENDMETHOD.
+
+  METHOD zif_prvd_vault~verify.
+    DATA lv_code TYPE i.
+    DATA lv_temp TYPE string.
+    DATA lv_uri TYPE string VALUE '/api/v1/vaults/{vault_id}/keys/{key_id}/verify'.
+    DATA lv_request_data TYPE REF TO data.
+    DATA lv_request_str TYPE string.
+    lv_temp = iv_vaultid.
+    lv_temp = cl_http_utility=>escape_url( condense( lv_temp ) ).
+    REPLACE ALL OCCURRENCES OF '{vault_id}' IN lv_uri WITH lv_temp.
+    lv_temp = iv_keyid.
+    REPLACE ALL OCCURRENCES OF '{key_id}' IN lv_uri WITH lv_temp.
+  ENDMETHOD.
+
 ENDCLASS.

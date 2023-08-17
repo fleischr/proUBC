@@ -24,23 +24,25 @@ CLASS zcl_prvd_vault_helper DEFINITION
     METHODS list_vaults
       RETURNING VALUE(rt_vault_list) TYPE zif_prvd_vault=>tty_vault_query .
     "! Creates a PRVD Vault for the user
-    METHODS create_vault .
+    METHODS create_vault IMPORTING is_vault_create TYPE zif_prvd_vault=>ty_vault_create
+      RETURNING VALUE(rs_created_vault) TYPE zif_prvd_vault=>ty_vault_create .
     "! Derives a key for
     METHODS derive_key .
     "! Lists the keys available in the vault
     METHODS list_keys IMPORTING iv_vault_id TYPE zprvdvaultid
                       RETURNING VALUE(rt_vault_keys) TYPE zif_prvd_vault=>ty_vault_keys_list.
     "! Deletes the specified user key upon user request
-    METHODS delete_keys .
+    METHODS delete_keys IMPORTING iv_vault_id TYPE zprvdvaultid
+                                  iv_key_id   TYPE zprvdvaultid .
     "! Encrypts data
     METHODS encrypt IMPORTING iv_vault_id TYPE zprvdvaultid
                               iv_key_id   TYPE zprvdvaultid
-                              iv_encrypt_req TYPE zif_prvd_vault=>ty_encrypt_req
+                              is_encrypt_req TYPE zif_prvd_vault=>ty_encrypt_req
                     RETURNING VALUE(rs_vault_encrypt_res) TYPE zif_prvd_vault=>ty_encrypt_res.
     "! Decrypts data
     METHODS decrypt IMPORTING iv_vault_id TYPE zprvdvaultid
                               iv_key_id   TYPE zprvdvaultid
-                              iv_decrypt_req TYPE zif_prvd_vault=>ty_encrypt_req
+                              is_decrypt_req TYPE zif_prvd_vault=>ty_encrypt_req
                     RETURNING VALUE(rs_vault_decrypt_res) TYPE zif_prvd_vault=>ty_encrypt_res .
     "! Used to cryptographically sign data
     METHODS vault_sign IMPORTING iv_vault_id                    TYPE zprvdvaultid
@@ -52,10 +54,6 @@ CLASS zcl_prvd_vault_helper DEFINITION
                              iv_key_id                      TYPE zprvdvaultid
                              is_verify_req                  TYPE zif_prvd_vault=>ty_verify_req
                  RETURNING VALUE(rs_vault_verify_res)       TYPE zif_prvd_vault=>ty_verify_res.
-    "! Retrieves the wallet address per Vault data input specs
-    METHODS get_wallet_address
-      RETURNING
-        VALUE(rv_wallet_address) TYPE zprvd_smartcontract_addr .
     "! Retrives the access token
     METHODS get_access_token RETURNING VALUE(rv_access_token) TYPE zprvdrefreshtoken.
     "! Retrieves vault specific to org
@@ -86,6 +84,9 @@ CLASS zcl_prvd_vault_helper IMPLEMENTATION.
   METHOD constructor.
     DATA: lv_jwt    TYPE REF TO data,
           lv_status TYPE i.
+
+    FIELD-SYMBOLS: <fs_authreq>  TYPE any,
+                   <fs_authreq2> TYPE string.
     super->constructor( ).
 
     IF io_prvd_api_helper IS BOUND.
@@ -105,11 +106,9 @@ CLASS zcl_prvd_vault_helper IMPLEMENTATION.
     IF mv_prvd_token IS INITIAL.
       mo_prvd_api_helper->call_ident_api(
           IMPORTING
-            ev_authtoken   = lv_jwt
-            status         = lv_status ).
+            ev_authtoken = lv_jwt
+            status       = lv_status ).
 
-      FIELD-SYMBOLS: <fs_authreq>  TYPE any,
-                     <fs_authreq2> TYPE string.
       ASSIGN lv_jwt->* TO FIELD-SYMBOL(<ls_data>).
       IF sy-subrc <> 0.
       ENDIF.
@@ -154,7 +153,7 @@ CLASS zcl_prvd_vault_helper IMPLEMENTATION.
           lv_apiresponse TYPE REF TO data,
           lv_apiresponsecode TYPE i.
     mo_vault_api = get_vault_client( ).
-    mo_vault_api->create_key(
+    mo_vault_api->zif_prvd_vault~create_key(
       EXPORTING
         iv_vault_id         = iv_vault_id
         is_body             = is_key_create_req
@@ -175,9 +174,13 @@ CLASS zcl_prvd_vault_helper IMPLEMENTATION.
           lv_apiresponse TYPE REF TO data,
           lv_apiresponsecode TYPE i.
     mo_vault_api = get_vault_client( ).
-*    mo_vault_api->create_vault(
-*        is_body          =).
-*    CATCH cx_static_check.
+    mo_vault_api->zif_prvd_vault~create_vault(
+      EXPORTING
+       is_vault_create     = is_vault_create
+      IMPORTING
+       ev_apiresponsestr   = lv_apiresponsestr
+       ev_apiresponse      = lv_apiresponse
+       ev_httpresponsecode = lv_apiresponsecode ).
     CASE lv_httpresponsecode.
       WHEN 200.
       WHEN OTHERS.
@@ -189,7 +192,12 @@ CLASS zcl_prvd_vault_helper IMPLEMENTATION.
     DATA: lv_apiresponsestr TYPE string,
           lv_apiresponse TYPE REF TO data,
           lv_apiresponsecode TYPE i.
-    mo_vault_api = get_vault_client(
+    mo_vault_api = get_vault_client( ).
+    mo_vault_api->zif_prvd_vault~decrypt(
+      EXPORTING
+        iv_vault_id         = iv_vault_id
+        iv_key_id           = iv_key_id
+        is_body             = is_decrypt_req
       IMPORTING
         ev_apiresponsestr   = lv_apiresponsestr
         ev_apiresponse      = lv_apiresponse
@@ -205,7 +213,11 @@ CLASS zcl_prvd_vault_helper IMPLEMENTATION.
     DATA: lv_apiresponsestr TYPE string,
           lv_apiresponse TYPE REF TO data,
           lv_apiresponsecode TYPE i.
-    mo_vault_api = get_vault_client(
+    mo_vault_api = get_vault_client( ).
+    mo_vault_api->zif_prvd_vault~delete_keys(
+      EXPORTING
+        iv_vault_id         = iv_vault_id
+        iv_key_id           = iv_key_id
       IMPORTING
         ev_apiresponsestr   = lv_apiresponsestr
         ev_apiresponse      = lv_apiresponse
@@ -221,11 +233,12 @@ CLASS zcl_prvd_vault_helper IMPLEMENTATION.
     DATA: lv_apiresponsestr TYPE string,
           lv_apiresponse TYPE REF TO data,
           lv_apiresponsecode TYPE i.
-    mo_vault_api = get_vault_client(
+    mo_vault_api = get_vault_client( ).
+    mo_vault_api->zif_prvd_vault~derive_key(
       IMPORTING
-      ev_apiresponsestr   = lv_apiresponsestr
-      ev_apiresponse      = lv_apiresponse
-      ev_httpresponsecode = lv_apiresponsecode ).
+        ev_apiresponsestr   = lv_apiresponsestr
+        ev_apiresponse      = lv_apiresponse
+        ev_httpresponsecode = lv_apiresponsecode ).
     CASE lv_httpresponsecode.
       WHEN 200.
       WHEN OTHERS.
@@ -237,7 +250,12 @@ CLASS zcl_prvd_vault_helper IMPLEMENTATION.
     DATA: lv_apiresponsestr TYPE string,
           lv_apiresponse TYPE REF TO data,
           lv_apiresponsecode TYPE i.
-    mo_vault_api = get_vault_client(
+    mo_vault_api = get_vault_client( ).
+    mo_vault_api->zif_prvd_vault~encrypt(
+      EXPORTING
+       iv_vault_id          = iv_vault_id
+       iv_key_id            = iv_key_id
+       is_body              = is_encrypt_req
       IMPORTING
         ev_apiresponsestr   = lv_apiresponsestr
         ev_apiresponse      = lv_apiresponse
@@ -277,12 +295,6 @@ CLASS zcl_prvd_vault_helper IMPLEMENTATION.
     ENDIF.
   ENDMETHOD.
 
-
-  METHOD get_wallet_address.
-    rv_wallet_address = ''.
-  ENDMETHOD.
-
-
   METHOD list_keys.
     DATA: lv_apiresponsestr   TYPE string,
           lv_apiresponse      TYPE REF TO data,
@@ -318,7 +330,7 @@ CLASS zcl_prvd_vault_helper IMPLEMENTATION.
             ev_apiresponsestr   = lv_apiresponsestr
             ev_apiresponse      = lv_apiresponse
             ev_httpresponsecode = lv_httpresponsecode ).
-    IF lv_httpresponsecode EQ 200.
+    IF lv_httpresponsecode = 200.
       /ui2/cl_json=>deserialize(
         EXPORTING
           json = lv_apiresponsestr
@@ -361,7 +373,8 @@ CLASS zcl_prvd_vault_helper IMPLEMENTATION.
     DATA: lv_apiresponsestr TYPE string,
           lv_apiresponse TYPE REF TO data,
           lv_apiresponsecode TYPE i.
-    mo_vault_api = get_vault_client(
+    mo_vault_api = get_vault_client( ).
+    mo_vault_api->zif_prvd_vault~verify(
       IMPORTING
         ev_apiresponsestr   = lv_apiresponsestr
         ev_apiresponse      = lv_apiresponse
